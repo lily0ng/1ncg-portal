@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import useSWR from 'swr'
 import {
   LayoutDashboard,
   FolderKanban,
@@ -18,9 +19,12 @@ import {
   X,
   Menu,
   ChevronRight,
+  Puzzle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/portal/dashboard' },
@@ -48,15 +52,17 @@ const networkItems = [
 
 const otherItems = [
   { icon: CreditCard, label: 'Billing', href: '/portal/billing', badge: 'MMK' },
+]
+
+const bottomItems = [
   { icon: HelpCircle, label: 'Support', href: '/portal/support' },
   { icon: BookOpen, label: 'Docs', href: '/portal/docs' },
 ]
 
-import { Puzzle } from 'lucide-react'
-
 export function UserSidebar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { data: uiSettings } = useSWR('/api/ui-settings', fetcher)
 
   return (
     <>
@@ -88,11 +94,9 @@ export function UserSidebar() {
         <div className="p-6">
           {/* Logo */}
           <Link href="/portal/dashboard" className="flex items-center gap-3 mb-8">
-            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg">
-              <Server className="w-6 h-6 text-white" />
-            </div>
+            <img src="/resource/image/ONE CLOUD NEXT-GEN_Logo_JPEG version_v2.jpg" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
             <div>
-              <h1 className="text-lg font-bold text-white">CloudStack</h1>
+              <h1 className="text-lg font-bold text-white">{uiSettings?.portalName || 'CloudStack'}</h1>
               <p className="text-xs text-slate-400">User Portal</p>
             </div>
           </Link>

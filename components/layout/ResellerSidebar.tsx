@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import useSWR from 'swr'
 import {
   LayoutDashboard,
   Users,
@@ -23,6 +24,8 @@ import {
   Building2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 interface NavItem {
   icon: React.ElementType
@@ -156,6 +159,7 @@ export function ResellerSidebar() {
   const pathname = usePathname() ?? ''
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { data: uiSettings } = useSWR('/api/ui-settings', fetcher)
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -171,11 +175,9 @@ export function ResellerSidebar() {
           className="flex items-center gap-3"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg shadow-lg">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
+          <img src="/resource/image/ONE CLOUD NEXT-GEN_Logo_JPEG version_v2.jpg" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
           <div>
-            <h1 className="text-base font-bold text-white leading-tight">CloudStack</h1>
+            <h1 className="text-base font-bold text-white leading-tight">{uiSettings?.portalName || 'CloudStack'}</h1>
             <p className="text-xs text-slate-400 leading-tight">Reseller Portal</p>
           </div>
         </Link>

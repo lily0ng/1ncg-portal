@@ -12,6 +12,14 @@ const nextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: '/resource/:path*',
+        destination: '/api/resource/:path*',
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

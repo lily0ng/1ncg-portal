@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import useSWR from 'swr'
 import {
   LayoutDashboard,
   Server,
@@ -31,6 +32,8 @@ import {
   Menu,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 const menuSections = [
   {
@@ -157,6 +160,7 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const [expandedSections, setExpandedSections] = useState<string[]>(['Overview', 'Compute', 'Storage', 'Network', 'Images', 'Management'])
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { data: uiSettings } = useSWR('/api/ui-settings', fetcher)
 
   const toggleSection = (title: string) => {
     setExpandedSections(prev =>
@@ -196,11 +200,9 @@ export function AdminSidebar() {
         <div className="p-6">
           {/* Logo */}
           <Link href="/admin/dashboard" className="flex items-center gap-3 mb-8">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-lg">
-              <Server className="w-6 h-6 text-white" />
-            </div>
+            <img src="/resource/image/ONE CLOUD NEXT-GEN_Logo_JPEG version_v2.jpg" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">CloudStack</h1>
+              <h1 className="text-lg font-bold text-sidebar-foreground">{uiSettings?.portalName || 'CloudStack'}</h1>
               <p className="text-xs text-muted-foreground">Admin Portal</p>
             </div>
           </Link>
