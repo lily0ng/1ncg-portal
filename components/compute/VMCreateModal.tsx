@@ -201,27 +201,32 @@ export function VMCreateModal({ open, onClose, onRefresh }: Props) {
         if (step === 1) {
           const res  = await fetch('/api/zones')
           const data = await res.json()
-          setZones(data?.zones || data || [])
+          const list = data?.zones
+          setZones(Array.isArray(list) ? list : [])
         }
         if (step === 2 && formData.zoneid) {
           const res  = await fetch(`/api/images/templates?zoneid=${formData.zoneid}&templatefilter=executable`)
           const data = await res.json()
-          setTemplates(data?.templates || data || [])
+          const list = data?.templates
+          setTemplates(Array.isArray(list) ? list : [])
         }
         if (step === 3) {
           const res  = await fetch('/api/service-offerings/compute')
           const data = await res.json()
-          setOfferings(data?.serviceofferings || data || [])
+          const list = data?.offerings
+          setOfferings(Array.isArray(list) ? list : [])
         }
         if (step === 4 && formData.zoneid) {
           const res  = await fetch(`/api/network/networks?zoneid=${formData.zoneid}`)
           const data = await res.json()
-          setNetworks(data?.networks || data || [])
+          const list = data?.networks
+          setNetworks(Array.isArray(list) ? list : [])
         }
         if (step === 5) {
           const res  = await fetch('/api/compute/ssh-keys')
           const data = await res.json()
-          setSSHKeys(data?.sshkeypair || data || [])
+          const list = data?.sshkeypair
+          setSSHKeys(Array.isArray(list) ? list : [])
         }
       } catch (e: any) {
         setStepError(e.message || 'Failed to load data')
@@ -732,4 +737,15 @@ export function VMCreateModal({ open, onClose, onRefresh }: Props) {
       </Dialog.Portal>
     </Dialog.Root>
   )
+}
+
+// Alias export for pages using the DeployVMDialog name
+interface DeployVMDialogProps {
+  open: boolean
+  onClose: () => void
+  onDeployed: () => void
+}
+
+export function DeployVMDialog({ open, onClose, onDeployed }: DeployVMDialogProps) {
+  return <VMCreateModal open={open} onClose={onClose} onRefresh={onDeployed} />
 }

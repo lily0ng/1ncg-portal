@@ -118,8 +118,9 @@ export default function InstanceDetailPage() {
     }
   }
 
+  const memTotalMB = vm?.memory ?? 0
   const memUsedMB = vm ? Math.max(0, (vm.memory ?? 0) - Math.round((vm.memoryintfreekbs ?? 0) / 1024)) : 0
-  const memPct = vm?.memory ? Math.round((memUsedMB / vm.memory) * 100) : 0
+  const memPct = memTotalMB > 0 ? Math.round((memUsedMB / memTotalMB) * 100) : 0
   const cpuPct = parseFloat(vm?.cpuused?.replace('%', '') ?? '0')
 
   if (vmError) {

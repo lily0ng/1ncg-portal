@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { DeployVMDialog } from '@/components/compute/DeployVMDialog'
+import { DeployVMDialog } from '@/components/compute/VMCreateModal'
 import { cn } from '@/lib/utils'
 
 const STATE_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary' | 'info'> = {
@@ -100,14 +100,14 @@ export default function InstancesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text)]">Instances</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--text)] truncate">Instances</h1>
           <p className="text-[var(--text-muted)] text-sm mt-0.5">
             {loading ? 'Loading…' : `${vms.length} total · ${runningCount} running · ${stoppedCount} stopped${errorCount > 0 ? ` · ${errorCount} error` : ''}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="icon"
@@ -116,7 +116,7 @@ export default function InstancesPage() {
           >
             <RefreshCw className={cn('w-4 h-4', refreshing && 'animate-spin')} />
           </Button>
-          <Button onClick={() => setDeployOpen(true)} className="gap-2">
+          <Button onClick={() => setDeployOpen(true)} className="gap-2 whitespace-nowrap">
             <Plus className="w-4 h-4" />
             Deploy Instance
           </Button>
