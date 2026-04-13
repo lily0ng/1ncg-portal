@@ -10,6 +10,7 @@ export async function cloudstack(
 ): Promise<any> {
   const all: Record<string, string> = { ...params, command, response: 'json', apikey: CS_API_KEY }
 
+  // Build query string for signature (lowercase keys, sorted, lowercase values)
   const qs = Object.keys(all)
     .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
     .map(k =>
@@ -17,16 +18,26 @@ export async function cloudstack(
       encodeURIComponent(all[k]).toLowerCase()
     ).join('&')
 
-  const sig = encodeURIComponent(
-    crypto.createHmac('sha1', CS_SECRET).update(qs).digest('base64')
-  )
+  const sig = crypto.createHmac('sha1', CS_SECRET).update(qs).digest('base64')
 
-  const url = `${CS_URL}/client/api?` +
-    Object.keys(all).map(k => `${k}=${encodeURIComponent(all[k])}`).join('&') +
-    `&signature=${sig}` 
+  // Use POST to avoid 431 Request Header Fields Too Large error
+  const formData = new URLSearchParams()
+  Object.keys(all).forEach(k => formData.append(k, all[k]))
+  formData.append('signature', sig)
 
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`CloudStack error: ${res.status}`)
+  const res = await fetch(`${CS_URL}/client/api`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString()
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Unknown error')
+    throw new Error(`CloudStack error: ${res.status} - ${text.slice(0, 200)}`)
+  }
+
   return res.json()
 }
 

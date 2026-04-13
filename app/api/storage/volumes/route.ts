@@ -7,6 +7,9 @@ export async function GET(req: NextRequest) {
     const user = await getAuthUser(req)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const { searchParams } = new URL(req.url)
+    const virtualmachineid = searchParams.get('virtualmachineid')
+
     let params: Record<string, string> = {}
 
     if (user.role === 'ADMIN') {
@@ -17,8 +20,19 @@ export async function GET(req: NextRequest) {
       params = { account: user.account, domainid: user.domainId }
     }
 
+    // Filter by VM if provided
+    if (virtualmachineid) {
+      params.virtualmachineid = virtualmachineid
+    }
+
     const data = await cloudstack('listVolumes', params)
-    const volumes = data.listvolumesresponse?.volume || []
+    let volumes = data.listvolumesresponse?.volume || []
+
+    // Ensure volumes is an array
+    if (!Array.isArray(volumes) && volumes) {
+      volumes = [volumes]
+    }
+
     return NextResponse.json({ volumes, count: volumes.length })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })

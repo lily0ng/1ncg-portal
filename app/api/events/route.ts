@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cloudstack, pollJob } from '@/lib/cloudstack'
+import { cloudstack } from '@/lib/cloudstack'
 import { getAuthUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -12,15 +12,46 @@ export async function GET(req: NextRequest) {
     const pagesize = searchParams.get('pagesize') || '50'
     const resourceid = searchParams.get('resourceid')
     const type = searchParams.get('type')
+    const level = searchParams.get('level')
 
     const params: Record<string, string> = { page, pagesize }
-    if (resourceid) params.resourceid = resourceid
+    // CloudStack requires resourcetype when using resourceid
+    if (resourceid) {
+      params.resourceid = resourceid
+      params.resourcetype = 'VirtualMachine'  // Required by CloudStack API
+    }   
     if (type) params.type = type
+    if (level) params.level = level
+
+    console.log('[Events API] Fetching events with params:', params)
 
     const data = await cloudstack('listEvents', params)
-    const events = data.listeventsresponse?.event || []
-    return NextResponse.json({ events, count: events.length })
+    console.log('[Events API] CloudStack response:', JSON.stringify(data).slice(0, 500))
+
+    // Handle CloudStack response structure
+    let events: any[] = []
+    if (data.listeventsresponse) {
+      // CloudStack returns events directly or nested
+      events = data.listeventsresponse.event || []
+      // If only one event, CloudStack returns object instead of array
+      if (!Array.isArray(events) && events) {
+        events = [events]
+      }
+    }
+
+    console.log(`[Events API] Found ${events.length} events`)
+
+    return NextResponse.json({
+      events,
+      count: events.length,
+      resourceid: resourceid || null
+    })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    console.error('[Events API] Error:', error)
+    return NextResponse.json({
+      error: error.message || 'Internal Server Error',
+      events: [],
+      count: 0
+    }, { status: 500 })
   }
 }
