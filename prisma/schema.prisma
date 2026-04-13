@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  csUserId    String    @unique
+  username    String    @unique
+  email       String
+  role        Role      @default(USER)
+  domainId    String
+  account     String
+  resellerId  String?
+  balance     Float     @default(0)
+  createdAt   DateTime  @default(now())
+  reseller    Reseller? @relation(fields: [resellerId], references: [id])
+  invoices    Invoice[]
+  sessions    Session[]
+  tickets     SupportTicket[]
+}
+
+model Reseller {
+  id           String   @id @default(cuid())
+  csAccountId  String   @unique
+  name         String
+  email        String
+  domainId     String
+  commission   Float    @default(0.10)
+  markupPct    Float    @default(0.20)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  customers    User[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  userId     String
+  invoiceNo  String        @unique @default(cuid())
+  amount     Float
+  amountMMK  Float
+  month      String
+  status     InvoiceStatus @default(UNPAID)
+  items      Json
+  createdAt  DateTime      @default(now())
+  paidAt     DateTime?
+  dueAt      DateTime
+  user       User          @relation(fields: [userId], references: [id])
+}
+
+model PricingPlan {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  currency         String   @default("MMK")
+  vmRunningHr      Float    @default(0.05)
+  vmAllocHr        Float    @default(0.01)
+  publicIpHr       Float    @default(0.004)
+  storageGbMonth   Float    @default(0.10)
+  snapshotGb       Float    @default(0.02)
+  lbRuleHr         Float    @default(0.01)
+  vpnUserHr        Float    @default(0.005)
+  vcpuPrice        Float    @default(0)
+  ramGbPrice       Float    @default(0)
+  storageGbPrice   Float    @default(0)
+  ipPrice          Float    @default(0)
+  bandwidthGbPrice Float    @default(0)
+  snapshotGbPrice  Float    @default(0)
+  lbPrice          Float    @default(0)
+  k8sNodePrice     Float    @default(0)
+  minMonthlyFee    Float    @default(0)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+}
+
+model MarketplaceApp {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  category     String
+  icon         String?
+  templateId   String?
+  offeringId   String?
+  networkId    String?
+  price        Float    @default(0)
+  deployParams Json?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model SyncLog {
+  id          String   @id @default(cuid())
+  syncedAt    DateTime
+  vmCount     Int
+  volumeCount Int
+  netCount    Int
+  hostCount   Int
+  status      String
+  duration    Int
+}
+
+model UISettings {
+  id           String  @id @default("default")
+  portalName   String  @default("Cloud Portal")
+  logoUrl      String?
+  primaryColor String  @default("#6366f1")
+  theme        String  @default("dark-nebula")
+}
+
+enum Role {
+  ADMIN
+  RESELLER
+  USER
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String
+  subject   String
+  message   String
+  priority  String   @default("medium")
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
