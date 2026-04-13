@@ -12,7 +12,9 @@ import {
   Activity, Info, Shield, Settings, Key, Wifi,
   BarChart3, Archive, CalendarDays, Search, Layers, Lock,
   LayoutGrid, List, SlidersHorizontal, CheckCircle2,
-  FileCode, Users, ChevronRight,
+  FileCode, Users, ChevronRight, Clipboard, Edit2, Disc,
+  ArrowUpDown, Move, DatabaseBackup, Filter,
+  ChevronLeftIcon, ChevronRightIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -205,6 +207,9 @@ export default function InstanceDetailPage() {
   const [addPfOpen,      setAddPfOpen]      = useState(false)
   const [fwForm,         setFwForm]         = useState({ cidr: '0.0.0.0/0', protocol: 'TCP', startport: '', endport: '', direction: 'ingress' })
   const [pfForm,         setPfForm]         = useState({ publicport: '', privateport: '', protocol: 'TCP' })
+  const [evtFilter,      setEvtFilter]      = useState<'ALL' | 'INFO' | 'WARN' | 'ERROR'>('ALL')
+  const [evtPage,        setEvtPage]        = useState(1)
+  const EVT_PAGE_SIZE = 10
 
   // ── SWR ────────────────────────────────────────────────────────────────
   const { data: vmData,   error: vmError, isLoading: vmLoading, mutate: mutateVM } =
@@ -318,24 +323,100 @@ export default function InstanceDetailPage() {
           </div>
         </div>
         {vm && (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Console */}
+            <Button variant="outline" size="sm"
+              onClick={() => window.open(`/api/compute/vms/${id}/console`, '_blank')}
+              className="gap-1.5 border-purple-600/40 text-purple-400 hover:bg-purple-500/10 text-xs h-8 px-3">
+              <Terminal className="w-3.5 h-3.5" /> Console
+            </Button>
+            {/* Copy console URL */}
+            <Button variant="outline" size="sm" title="Copy Console URL"
+              onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/compute/vms/${id}/console`); toast.success('Console URL copied') }}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Clipboard className="w-3.5 h-3.5" />
+            </Button>
+            {/* Edit */}
+            <Button variant="outline" size="sm" title="Edit Instance"
+              onClick={() => setSection('changehostname')}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Edit2 className="w-3.5 h-3.5" />
+            </Button>
+
+            <div className="w-px h-6 bg-[var(--border)] mx-0.5" />
+
+            {/* Start (only when stopped) */}
             {vm.state === 'Stopped' && (
-              <Button variant="outline" size="sm" onClick={() => handleAction('start')} disabled={!!actionLoading} className="gap-1.5 border-green-600/40 text-green-400 hover:bg-green-500/10 text-xs">
+              <Button variant="outline" size="sm" onClick={() => handleAction('start')} disabled={!!actionLoading}
+                className="gap-1.5 border-green-600/40 text-green-400 hover:bg-green-500/10 text-xs h-8 px-3">
                 <Play className="w-3.5 h-3.5" />{actionLoading === 'start' ? 'Starting…' : 'Start'}
               </Button>
             )}
-            {vm.state === 'Running' && (<>
-              <Button variant="outline" size="sm" onClick={() => handleAction('stop')} disabled={!!actionLoading} className="gap-1.5 border-yellow-600/40 text-yellow-400 hover:bg-yellow-500/10 text-xs">
+            {/* Stop */}
+            {vm.state === 'Running' && (
+              <Button variant="outline" size="sm" onClick={() => handleAction('stop')} disabled={!!actionLoading}
+                className="gap-1.5 border-yellow-600/40 text-yellow-400 hover:bg-yellow-500/10 text-xs h-8 px-3">
                 <Square className="w-3.5 h-3.5" />{actionLoading === 'stop' ? 'Stopping…' : 'Stop'}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleAction('reboot')} disabled={!!actionLoading} className="gap-1.5 border-blue-600/40 text-blue-400 hover:bg-blue-500/10 text-xs">
+            )}
+            {/* Reboot */}
+            {vm.state === 'Running' && (
+              <Button variant="outline" size="sm" onClick={() => handleAction('reboot')} disabled={!!actionLoading}
+                className="gap-1.5 border-blue-600/40 text-blue-400 hover:bg-blue-500/10 text-xs h-8 px-3">
                 <RotateCcw className="w-3.5 h-3.5" />{actionLoading === 'reboot' ? 'Rebooting…' : 'Reboot'}
               </Button>
-            </>)}
-            <Button variant="outline" size="sm" onClick={() => window.open(`/api/compute/vms/${id}/console`, '_blank')} className="gap-1.5 border-purple-600/40 text-purple-400 hover:bg-purple-500/10 text-xs">
-              <Terminal className="w-3.5 h-3.5" /> Console
+            )}
+            {/* Reinstall */}
+            <Button variant="outline" size="sm" title="Reinstall Instance"
+              onClick={() => setSection('changeos')}
+              className="gap-1.5 border-orange-600/40 text-orange-400 hover:bg-orange-500/10 text-xs h-8 px-3">
+              <HardDrive className="w-3.5 h-3.5" /> Reinstall
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleAction('destroy')} disabled={!!actionLoading} className="gap-1.5 border-red-600/40 text-red-400 hover:bg-red-500/10 text-xs">
+
+            <div className="w-px h-6 bg-[var(--border)] mx-0.5" />
+
+            {/* Take VM Snapshot */}
+            <Button variant="outline" size="sm" title="Take Instance Snapshot"
+              onClick={() => setSection('snapshots')}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Camera className="w-3.5 h-3.5" />
+            </Button>
+            {/* Take Volume Snapshot */}
+            <Button variant="outline" size="sm" title="Take Volume Snapshot"
+              onClick={() => { const rootVol = (volData?.volumes || []).find((v: any) => v.type === 'ROOT'); if (!rootVol) { toast.error('No root volume found'); return } fetch(`/api/storage/volumes/${rootVol.id}/snapshot`, { method: 'POST' }).then((r) => { if (r.ok) toast.success('Volume snapshot initiated'); else toast.error('Failed') }) }}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Archive className="w-3.5 h-3.5" />
+            </Button>
+            {/* Assign to Backup Offering */}
+            <Button variant="outline" size="sm" title="Assign to Backup Offering"
+              onClick={() => { toast.info('Select a backup offering to assign') }}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <DatabaseBackup className="w-3.5 h-3.5" />
+            </Button>
+            {/* Attach ISO */}
+            <Button variant="outline" size="sm" title="Attach ISO"
+              onClick={() => { toast.info('Select an ISO to attach') }}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Disc className="w-3.5 h-3.5" />
+            </Button>
+            {/* Scale */}
+            <Button variant="outline" size="sm" title="Scale Instance"
+              onClick={() => setSection('changeplan')}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <ArrowUpDown className="w-3.5 h-3.5" />
+            </Button>
+            {/* Migrate */}
+            <Button variant="outline" size="sm" title="Migrate Instance"
+              onClick={() => { if (!confirm('Migrate this instance to another host?')) return; handleAction('migrate') }}
+              className="gap-1.5 border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)] text-xs h-8 px-2.5">
+              <Move className="w-3.5 h-3.5" />
+            </Button>
+
+            <div className="w-px h-6 bg-[var(--border)] mx-0.5" />
+
+            {/* Destroy */}
+            <Button variant="outline" size="sm" onClick={() => handleAction('destroy')} disabled={!!actionLoading}
+              className="gap-1.5 border-red-600/40 text-red-400 hover:bg-red-500/10 text-xs h-8 px-3">
               <Trash2 className="w-3.5 h-3.5" />{actionLoading === 'destroy' ? 'Destroying…' : 'Destroy'}
             </Button>
           </div>
@@ -382,13 +463,14 @@ export default function InstanceDetailPage() {
               {/* ═══ OVERVIEW ═══ */}
               {section === 'overview' && (
                 <div className="space-y-5">
+                  {/* Top stat cards row */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       { icon: Cpu,         color: 'text-blue-400',   bg: 'bg-blue-500/20',   label: 'vCPU',      value: vmLoading ? null : (vm?.cpunumber ?? '—'), sub: 'cores' },
                       { icon: MemoryStick, color: 'text-purple-400', bg: 'bg-purple-500/20', label: 'Memory',    value: vmLoading ? null : (vm?.memory ? `${Math.round(vm.memory / 1024)}` : '—'), sub: 'GB RAM' },
-                      { icon: Globe,       color: 'text-green-400',  bg: 'bg-green-500/20',  label: 'Private IP',value: vmLoading ? null : (vm?.ipaddress || '—'), sub: 'address', mono: true },
                       { icon: Activity,    color: 'text-orange-400', bg: 'bg-orange-500/20', label: 'CPU Usage', value: vmLoading ? null : `${cpuPct}%`, sub: 'current' },
-                    ].map(({ icon: Icon, color, bg, label, value, sub, mono }) => (
+                      { icon: HardDrive,   color: 'text-teal-400',   bg: 'bg-teal-500/20',   label: 'Storage',   value: vmLoading ? null : ((volData?.volumes || []).reduce((a: number, v: any) => a + (v.size ?? 0), 0) > 0 ? `${Math.round((volData?.volumes || []).reduce((a: number, v: any) => a + (v.size ?? 0), 0) / 1073741824)}` : '—'), sub: 'GB total' },
+                    ].map(({ icon: Icon, color, bg, label, value, sub }) => (
                       <Card key={label}>
                         <CardContent className="p-4">
                           <div className="flex items-center gap-2 mb-2">
@@ -396,22 +478,116 @@ export default function InstanceDetailPage() {
                             <span className="text-xs text-[var(--text-muted)]">{label}</span>
                           </div>
                           {vmLoading ? <div className="h-7 w-14 rounded bg-[var(--border)] animate-pulse" /> : <>
-                            <p className={cn('text-2xl font-bold text-[var(--text)]', mono && 'text-sm font-mono')}>{value}</p>
+                            <p className="text-2xl font-bold text-[var(--text)]">{value}</p>
                             <p className="text-xs text-[var(--text-muted)] mt-0.5">{sub}</p>
                           </>}
                         </CardContent>
                       </Card>
                     ))}
                   </div>
-                  <Card>
-                    <CardHeader><CardTitle className="text-sm">Resource Usage</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                      {vmLoading ? <Spinner /> : <>
-                        <UsageBar label="CPU Usage" percent={cpuPct} color="bg-blue-500" />
-                        <UsageBar label={`Memory (${memUsedMB} / ${memTotalMB} MB)`} percent={memPct} color="bg-purple-500" />
-                      </>}
-                    </CardContent>
-                  </Card>
+
+                  {/* IP / Network cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Private IP card */}
+                    <Card>
+                      <CardContent className="p-4 flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-green-500/20 shrink-0">
+                          <Globe className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-[var(--text-muted)] mb-0.5">Private IP</p>
+                          {vmLoading
+                            ? <div className="h-5 w-32 rounded bg-[var(--border)] animate-pulse" />
+                            : <p className="text-sm font-mono font-semibold text-[var(--text)] truncate">{vm?.ipaddress || '—'}</p>}
+                        </div>
+                        {vm?.ipaddress && (
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(vm.ipaddress); toast.success('Copied') }}
+                            className="p-1.5 rounded-lg hover:bg-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors shrink-0"
+                            title="Copy IP">
+                            <Clipboard className="w-4 h-4" />
+                          </button>
+                        )}
+                      </CardContent>
+                    </Card>
+                    {/* Public IP card */}
+                    <Card>
+                      <CardContent className="p-4 flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-blue-500/20 shrink-0">
+                          <Shield className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-[var(--text-muted)] mb-0.5">Public IP</p>
+                          {vmLoading
+                            ? <div className="h-5 w-32 rounded bg-[var(--border)] animate-pulse" />
+                            : <p className="text-sm font-mono font-semibold text-[var(--text)] truncate">{vm?.publicip || 'Not assigned'}</p>}
+                        </div>
+                        {vm?.publicip && (
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(vm.publicip); toast.success('Copied') }}
+                            className="p-1.5 rounded-lg hover:bg-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors shrink-0"
+                            title="Copy IP">
+                            <Clipboard className="w-4 h-4" />
+                          </button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Zone / Host / Template / OS cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { icon: Server,    color: 'text-indigo-400', bg: 'bg-indigo-500/20', label: 'Zone',     value: vm?.zonename },
+                      { icon: Cpu,       color: 'text-sky-400',    bg: 'bg-sky-500/20',    label: 'Host',     value: vm?.hostname },
+                      { icon: HardDrive, color: 'text-pink-400',   bg: 'bg-pink-500/20',   label: 'Template', value: vm?.templatename },
+                      { icon: Settings,  color: 'text-amber-400',  bg: 'bg-amber-500/20',  label: 'Offering', value: vm?.serviceofferingname },
+                    ].map(({ icon: Icon, color, bg, label, value }) => (
+                      <Card key={label}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={cn('p-1.5 rounded-lg', bg)}><Icon className={cn('w-4 h-4', color)} /></div>
+                            <span className="text-xs text-[var(--text-muted)]">{label}</span>
+                          </div>
+                          {vmLoading
+                            ? <div className="h-5 w-20 rounded bg-[var(--border)] animate-pulse" />
+                            : <p className="text-sm font-medium text-[var(--text)] truncate" title={value}>{value || '—'}</p>}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Resource usage + network/disk I/O row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader><CardTitle className="text-sm">Resource Usage</CardTitle></CardHeader>
+                      <CardContent className="space-y-4">
+                        {vmLoading ? <Spinner /> : <>
+                          <UsageBar label="CPU Usage" percent={cpuPct} color="bg-blue-500" />
+                          <UsageBar label={`Memory — ${memUsedMB} / ${memTotalMB} MB`} percent={memPct} color="bg-purple-500" />
+                        </>}
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader><CardTitle className="text-sm">I/O Statistics</CardTitle></CardHeader>
+                      <CardContent>
+                        {vmLoading ? <Spinner /> : (
+                          <div className="grid grid-cols-2 gap-3">
+                            {[
+                              { label: 'Net Read',   value: vm?.networkkbsread  != null ? `${(vm.networkkbsread  / 1024).toFixed(1)} MB` : '—', color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+                              { label: 'Net Write',  value: vm?.networkkbswrite != null ? `${(vm.networkkbswrite / 1024).toFixed(1)} MB` : '—', color: 'text-green-400',  bg: 'bg-green-500/10'  },
+                              { label: 'Disk Read',  value: `${vm?.diskioread  ?? '—'} ops`, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                              { label: 'Disk Write', value: `${vm?.diskiowrite ?? '—'} ops`, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+                            ].map(({ label, value, color, bg }) => (
+                              <div key={label} className={cn('text-center p-3 rounded-xl border border-[var(--border)]', bg)}>
+                                <p className={cn('text-lg font-bold', color)}>{value}</p>
+                                <p className="text-xs text-[var(--text-muted)] mt-0.5">{label}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               )}
 
@@ -925,30 +1101,92 @@ export default function InstanceDetailPage() {
               )}
 
               {/* ═══ EVENTS ═══ */}
-              {section === 'events' && (
-                <div className="space-y-2">
-                  <h2 className="text-base font-semibold text-[var(--text)] mb-3">Events</h2>
-                  {evtLoading ? <Spinner /> : events.length === 0
-                    ? <EmptyState icon={Clock} title="No events found" />
-                    : events.map((evt, i) => {
-                        const isError = evt.level === 'ERROR'
-                        const isWarn  = evt.level === 'WARN'
-                        return (
-                          <div key={evt.id || i} className={cn('flex items-start gap-3 p-4 rounded-xl border', isError ? 'border-red-600/30 bg-red-500/5' : isWarn ? 'border-yellow-600/30 bg-yellow-500/5' : 'border-[var(--border)] bg-[var(--card)]')}>
-                            <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', isError ? 'bg-red-500' : isWarn ? 'bg-yellow-500' : 'bg-blue-500')} />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-2 mb-0.5">
-                                <p className="text-sm font-medium text-[var(--text)] truncate">{evt.type}</p>
-                                <span className="text-xs text-[var(--text-muted)] shrink-0">{evt.created ? new Date(evt.created).toLocaleString() : '—'}</span>
+              {section === 'events' && (() => {
+                const filteredEvts = events.filter((e: any) => evtFilter === 'ALL' || e.level === evtFilter)
+                const totalPages   = Math.max(1, Math.ceil(filteredEvts.length / EVT_PAGE_SIZE))
+                const pageEvts     = filteredEvts.slice((evtPage - 1) * EVT_PAGE_SIZE, evtPage * EVT_PAGE_SIZE)
+                return (
+                  <div className="space-y-3">
+                    {/* Toolbar */}
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <h2 className="text-base font-semibold text-[var(--text)]">Events</h2>
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-4 h-4 text-[var(--text-muted)]" />
+                        {(['ALL', 'INFO', 'WARN', 'ERROR'] as const).map((lvl) => (
+                          <button key={lvl}
+                            onClick={() => { setEvtFilter(lvl); setEvtPage(1) }}
+                            className={cn('px-2.5 py-1 rounded-lg text-xs font-medium transition-colors', evtFilter === lvl
+                              ? lvl === 'ERROR' ? 'bg-red-500/20 text-red-400 border border-red-600/30'
+                                : lvl === 'WARN'  ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-600/30'
+                                : lvl === 'INFO'  ? 'bg-blue-500/20 text-blue-400 border border-blue-600/30'
+                                : 'bg-[var(--border)] text-[var(--text)] border border-[var(--border)]'
+                              : 'text-[var(--text-muted)] hover:bg-[var(--border)] border border-transparent'
+                            )}>
+                            {lvl}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Event list */}
+                    {evtLoading ? <Spinner /> : filteredEvts.length === 0
+                      ? <EmptyState icon={Clock} title="No events found" sub={evtFilter !== 'ALL' ? `No ${evtFilter} events for this instance` : undefined} />
+                      : pageEvts.map((evt: any, i: number) => {
+                          const isError = evt.level === 'ERROR'
+                          const isWarn  = evt.level === 'WARN'
+                          return (
+                            <div key={evt.id || i} className={cn('flex items-start gap-3 p-4 rounded-xl border', isError ? 'border-red-600/30 bg-red-500/5' : isWarn ? 'border-yellow-600/30 bg-yellow-500/5' : 'border-[var(--border)] bg-[var(--card)]')}>
+                              <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', isError ? 'bg-red-500' : isWarn ? 'bg-yellow-500' : 'bg-blue-500')} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2 mb-0.5">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <p className="text-sm font-medium text-[var(--text)] truncate">{evt.type}</p>
+                                    {evt.level && (
+                                      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0',
+                                        isError ? 'bg-red-500/20 text-red-400' : isWarn ? 'bg-yellow-500/20 text-yellow-500' : 'bg-blue-500/20 text-blue-400'
+                                      )}>{evt.level}</span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-[var(--text-muted)] shrink-0">{evt.created ? new Date(evt.created).toLocaleString() : '—'}</span>
+                                </div>
+                                <p className="text-xs text-[var(--text-muted)] truncate">{evt.description}</p>
+                                {evt.account && <p className="text-xs text-[var(--text-muted)] mt-0.5">by {evt.account}</p>}
                               </div>
-                              <p className="text-xs text-[var(--text-muted)] truncate">{evt.description}</p>
-                              {evt.account && <p className="text-xs text-[var(--text-muted)] mt-0.5">by {evt.account}</p>}
                             </div>
-                          </div>
-                        )
-                      })}
-                </div>
-              )}
+                          )
+                        })}
+
+                    {/* Pagination */}
+                    {!evtLoading && filteredEvts.length > EVT_PAGE_SIZE && (
+                      <div className="flex items-center justify-between pt-1">
+                        <p className="text-xs text-[var(--text-muted)]">
+                          Showing {(evtPage - 1) * EVT_PAGE_SIZE + 1}–{Math.min(evtPage * EVT_PAGE_SIZE, filteredEvts.length)} of {filteredEvts.length} events
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            disabled={evtPage === 1}
+                            onClick={() => setEvtPage((p) => p - 1)}
+                            className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--border)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            <ChevronLeftIcon className="w-4 h-4" />
+                          </button>
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                            <button key={p} onClick={() => setEvtPage(p)}
+                              className={cn('w-7 h-7 rounded-lg text-xs font-medium transition-colors border',
+                                p === evtPage ? 'bg-blue-600 text-white border-blue-600' : 'border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--border)]'
+                              )}>{p}</button>
+                          ))}
+                          <button
+                            disabled={evtPage === totalPages}
+                            onClick={() => setEvtPage((p) => p + 1)}
+                            className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--border)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                            <ChevronRightIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* ═══ SETTINGS ═══ */}
               {section === 'settings' && (
