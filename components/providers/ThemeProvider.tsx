@@ -1,21 +1,35 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme, applyTheme, applyMode, applyRadius, applySidebarVariant, applySidebarCollapsible, applySidebarPosition } from '@/hooks/useTheme'
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme()
+  const { theme, mode, radius, sidebarVariant, sidebarCollapsible, sidebarPosition } = useTheme()
 
   useEffect(() => {
-    const ALL_THEMES = ['dark-nebula','ocean-breeze','forest-night','sunset-pro','arctic-light','rose-gold','monochrome']
-    ALL_THEMES.forEach(t => {
-      document.documentElement.classList.remove(t)
-      document.documentElement.classList.remove(`theme-${t}`)
-    })
-    if (theme !== 'dark-nebula') {
-      document.documentElement.classList.add(`theme-${theme}`)
-    }
+    // Apply theme on mount and whenever theme/mode/radius changes
+    applyTheme(theme)
   }, [theme])
+
+  useEffect(() => {
+    applyMode(mode)
+  }, [mode])
+
+  useEffect(() => {
+    applyRadius(radius)
+  }, [radius])
+
+  useEffect(() => {
+    applySidebarVariant(sidebarVariant)
+  }, [sidebarVariant])
+
+  useEffect(() => {
+    applySidebarCollapsible(sidebarCollapsible)
+  }, [sidebarCollapsible])
+
+  useEffect(() => {
+    applySidebarPosition(sidebarPosition)
+  }, [sidebarPosition])
 
   return <>{children}</>
 }

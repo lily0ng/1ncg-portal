@@ -3,7 +3,17 @@ import { jwtVerify } from 'jose'
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!)
 
-const PUBLIC_ROUTES = ['/login', '/api/auth/login', '/api/auth/logout', '/api/auth/dev-login', '/api/ui-settings']
+const PUBLIC_ROUTES = [
+  '/login',
+  '/signup',
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/api/auth/dev-login',
+  '/api/auth/register',
+  '/api/auth/verify-otp',
+  '/api/auth/send-otp',
+  '/api/ui-settings'
+]
 
 type Role = 'ADMIN' | 'RESELLER' | 'USER'
 

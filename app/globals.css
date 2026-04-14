@@ -9,38 +9,88 @@
    Plus full shadcn/ui token set for component compatibility.
    ============================================================ */
 
-/* ── Default theme: Dark Nebula ─────────────────────────── */
+/* ── Default theme: Dark shadcn/ui ───────────────────────── */
 :root {
-  /* Semantic CMP variables */
-  --bg:           #0d0e1a;
-  --surface:      #161829;
-  --border:       #2a2d4a;
-  --accent:       #6366f1;
-  --accent-hover: #4f46e5;
-  --text:         #e2e4f0;
-  --text-muted:   #8b8fa8;
+  /* Semantic CMP variables - default dark */
+  --bg:           #09090b;
+  --surface:      #18181b;
+  --border:       #27272a;
+  --accent:       #a855f7;
+  --accent-hover: #9333ea;
+  --text:         #fafafa;
+  --text-muted:   #a1a1aa;
 
-  /* shadcn/ui token set */
-  --background:            222 47% 7%;
-  --foreground:            226 40% 92%;
-  --card:                  225 40% 10%;
-  --card-foreground:       226 40% 92%;
-  --popover:               225 40% 10%;
-  --popover-foreground:    226 40% 92%;
-  --primary:               239 84% 67%;
+  /* shadcn/ui token set - default dark mode */
+  --background:            0 0% 4%;
+  --foreground:            0 0% 98%;
+  --card:                  0 0% 8%;
+  --card-foreground:       0 0% 98%;
+  --popover:               0 0% 8%;
+  --popover-foreground:    0 0% 98%;
+  --primary:               270 60% 55%;
   --primary-foreground:    0 0% 100%;
-  --secondary:             225 30% 18%;
-  --secondary-foreground:  226 40% 92%;
-  --muted:                 225 30% 15%;
-  --muted-foreground:      226 18% 55%;
-  --accent-ui:             225 30% 18%;
-  --accent-foreground:     226 40% 92%;
-  --destructive:           0 72% 51%;
-  --destructive-foreground:0 0% 100%;
-  --border-ui:             225 30% 18%;
-  --input:                 225 30% 18%;
-  --ring:                  239 84% 67%;
+  --secondary:             240 4% 16%;
+  --secondary-foreground:  0 0% 98%;
+  --muted:                 240 4% 16%;
+  --muted-foreground:      240 5% 65%;
+  --accent-ui:             240 4% 16%;
+  --accent-foreground:     0 0% 98%;
+  --destructive:           0 63% 31%;
+  --destructive-foreground:0 0% 98%;
+  --border-ui:             240 4% 16%;
+  --input:                 240 4% 16%;
+  --ring:                  270 60% 55%;
   --radius:                0.5rem;
+}
+
+/* Dark mode class override */
+.dark {
+  --bg:           #09090b;
+  --surface:      #18181b;
+  --border:       #27272a;
+  --accent:       #a855f7;
+  --accent-hover: #9333ea;
+  --text:         #fafafa;
+  --text-muted:   #a1a1aa;
+  --background:            0 0% 4%;
+  --foreground:            0 0% 98%;
+  --card:                  0 0% 8%;
+  --card-foreground:       0 0% 98%;
+  --popover:               0 0% 8%;
+  --popover-foreground:    0 0% 98%;
+  --primary:               270 60% 55%;
+  --primary-foreground:    0 0% 100%;
+  --secondary:             240 4% 16%;
+  --secondary-foreground:  0 0% 98%;
+  --muted:                 240 4% 16%;
+  --muted-foreground:      240 5% 65%;
+  --accent-ui:             240 4% 16%;
+  --accent-foreground:     0 0% 98%;
+}
+
+/* Light mode class override */
+.light {
+  --bg:           #f0f4f8;
+  --surface:      #ffffff;
+  --border:       #d0dae6;
+  --accent:       #7c3aed;
+  --accent-hover: #6d28d9;
+  --text:         #111827;
+  --text-muted:   #6b7280;
+  --background:            210 40% 96%;
+  --foreground:            222 47% 11%;
+  --card:                  0 0% 100%;
+  --card-foreground:       222 47% 11%;
+  --popover:               0 0% 100%;
+  --popover-foreground:    222 47% 11%;
+  --primary:               262 83% 58%;
+  --primary-foreground:    0 0% 100%;
+  --secondary:             210 40% 96%;
+  --secondary-foreground:  222 47% 11%;
+  --muted:                 210 40% 96%;
+  --muted-foreground:      215 16% 47%;
+  --accent-ui:             210 40% 96%;
+  --accent-foreground:     222 47% 11%;
 }
 
 /* ── Ocean Breeze ─────────────────────────────────────────── */
@@ -196,6 +246,37 @@
   --border-ui:             343 35% 20%;
   --input:                 343 35% 18%;
   --ring:                  343 85% 60%;
+}
+
+/* ── Dark Nebula (dark theme) ──────────────────────────── */
+.theme-dark-nebula {
+  --bg:           #0d0e1a;
+  --surface:      #161829;
+  --border:       #2a2d4a;
+  --accent:       #6366f1;
+  --accent-hover: #4f46e5;
+  --text:         #e2e4f0;
+  --text-muted:   #8b8fa8;
+
+  --background:            222 47% 7%;
+  --foreground:            226 40% 92%;
+  --card:                  225 40% 10%;
+  --card-foreground:       226 40% 92%;
+  --popover:               225 40% 10%;
+  --popover-foreground:    226 40% 92%;
+  --primary:               239 84% 67%;
+  --primary-foreground:    0 0% 100%;
+  --secondary:             225 30% 18%;
+  --secondary-foreground:  226 40% 92%;
+  --muted:                 225 30% 15%;
+  --muted-foreground:      226 18% 55%;
+  --accent-ui:             225 30% 18%;
+  --accent-foreground:     226 40% 92%;
+  --destructive:           0 72% 51%;
+  --destructive-foreground:0 0% 100%;
+  --border-ui:             225 30% 18%;
+  --input:                 225 30% 18%;
+  --ring:                  239 84% 67%;
 }
 
 /* ── Monochrome ───────────────────────────────────────────── */
@@ -387,7 +468,7 @@ body {
   border-left: 2px solid var(--accent);
 }
 
-/* Status badge helpers */
+/* Status badge helpers - Dark theme optimized */
 .badge-running  { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a55; }
 .badge-stopped  { background: #dc262622; color: #f87171; border: 1px solid #dc262655; }
 .badge-starting { background: #d9770622; color: #fb923c; border: 1px solid #d9770655; }

@@ -3,9 +3,10 @@ import { redirect } from 'next/navigation'
 import { jwtVerify } from 'jose'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { Topbar } from '@/components/layout/Topbar'
+import { FloatingCustomizer } from '@/components/shared/FloatingCustomizer'
 
 async function verifyAdminToken() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')?.value
 
   if (!token) {
@@ -47,6 +48,9 @@ export default async function AdminLayout({
           {children}
         </main>
       </div>
+      
+      {/* Floating Customizer */}
+      <FloatingCustomizer />
     </div>
   )
 }

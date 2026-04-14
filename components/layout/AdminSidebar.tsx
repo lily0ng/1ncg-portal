@@ -14,24 +14,33 @@ import {
   CalendarDays,
   FolderKanban,
   UserCog,
-  Users,
-  Building2,
-  CloudCog,
-  Settings,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  ServerIcon,
+  RefreshCw,
+  Tag,
   Puzzle,
   Wrench,
   Palette,
+  CloudCog,
+  ChevronDown as ChevronDownIcon,
+  X as CloseIcon,
+  Settings,
+  ShoppingCart,
+  Shield,
+  Users,
+  Cpu,
+  Building2,
   CreditCard,
-  Tag,
-  RefreshCw,
   ShoppingBag,
-  ChevronRight,
-  ChevronDown,
-  ServerIcon,
   X,
   Menu,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/hooks/useTheme'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -153,13 +162,13 @@ const menuSections = [
   },
 ]
 
-// Import missing icons
-import { Cpu, Database, AlertTriangle, Shield } from 'lucide-react'
-
 export function AdminSidebar() {
   const pathname = usePathname()
   const [expandedSections, setExpandedSections] = useState<string[]>(['Overview', 'Compute', 'Storage', 'Network', 'Images', 'Management'])
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { sidebarVariant, sidebarPosition, sidebarOpen, toggleSidebar, sidebarCollapsible } = useTheme()
+  
+  const isCollapsed = !sidebarOpen && sidebarCollapsible === 'icon'
   const { data: uiSettings } = useSWR('/api/ui-settings', fetcher)
 
   const toggleSection = (title: string) => {
@@ -175,7 +184,7 @@ export function AdminSidebar() {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded-lg text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-[var(--text)] shadow-lg"
       >
         {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
@@ -183,81 +192,165 @@ export function AdminSidebar() {
       {/* Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 bg-gray-900/30 z-30 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
+      {/* Desktop Collapse Button */}
+      <button
+        onClick={toggleSidebar}
+        className="hidden lg:flex fixed left-72 top-1/2 -translate-y-1/2 z-50 w-6 h-12 -ml-3 items-center justify-center bg-[var(--surface)] border border-[var(--border)] rounded-r-lg shadow-md hover:bg-[var(--accent)]/10 transition-all"
+        style={{ left: sidebarOpen ? '18rem' : '0' }}
+      >
+        {sidebarOpen ? (
+          <ChevronLeft className="w-4 h-4 text-[var(--text)]" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-[var(--text)]" />
+        )}
+      </button>
+
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen w-72 bg-sidebar border-r border-sidebar-border overflow-y-auto',
-          'transition-transform duration-300 ease-in-out',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
-          'lg:relative lg:translate-x-0 lg:z-auto lg:shrink-0'
+          'fixed top-0 z-40 h-screen bg-sidebar overflow-y-auto',
+          'transition-all duration-300 ease-in-out',
+          sidebarPosition === 'right' ? 'right-0' : 'left-0',
+          sidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-0 lg:w-16 lg:translate-x-0',
+          mobileOpen ? 'translate-x-0' : sidebarPosition === 'right' ? 'translate-x-full' : '-translate-x-full',
+          'lg:relative lg:translate-x-0 lg:z-auto lg:shrink-0',
+          sidebarVariant === 'floating' && 'm-4 h-[calc(100vh-2rem)] rounded-xl border border-sidebar-border shadow-lg',
+          sidebarVariant === 'inset' && 'm-4 h-[calc(100vh-2rem)] rounded-xl border border-sidebar-border',
+          sidebarVariant === 'default' && 'border-r border-sidebar-border'
         )}
       >
-        <div className="p-6">
-          {/* Logo */}
-          <Link href="/admin/dashboard" className="flex items-center gap-3 mb-8">
-            <img src="/resource/image/ONE CLOUD NEXT-GEN_Logo_JPEG version_v2.jpg" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
-            <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">{uiSettings?.portalName || 'CloudStack'}</h1>
-              <p className="text-xs text-muted-foreground">Admin Portal</p>
+        <div className={cn('h-full', sidebarOpen ? 'p-6' : 'p-2 flex flex-col items-center')}>
+          {/* Logo - ShadcnStore Style */}
+          <Link href="/admin/dashboard" className={cn('flex items-center gap-3 mb-8', !sidebarOpen && 'lg:justify-center')}>
+            <div className="w-8 h-8 bg-[var(--surface)] border border-[var(--border)] rounded-lg flex items-center justify-center shrink-0">
+              <LayoutGrid className="w-4 h-4 text-[var(--text)]" />
             </div>
+            {sidebarOpen && (
+              <div>
+                <h1 className="text-sm font-bold text-sidebar-foreground">ShadcnStore</h1>
+                <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+              </div>
+            )}
           </Link>
 
           {/* Menu */}
-          <nav className="space-y-2">
-            {menuSections.map((section) => (
-              <div key={section.title}>
-                <button
-                  onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-sidebar-foreground transition-colors"
-                >
-                  {section.title}
-                  <ChevronDown
-                    className={cn(
-                      'w-4 h-4 transition-transform',
-                      expandedSections.includes(section.title) && 'rotate-180'
-                    )}
-                  />
-                </button>
+          {sidebarOpen ? (
+            <nav className="space-y-2">
+              {menuSections.map((section) => (
+                <div key={section.title}>
+                  <button
+                    onClick={() => toggleSection(section.title)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-sidebar-foreground transition-colors"
+                  >
+                    {section.title}
+                    <ChevronDownIcon
+                      className={cn(
+                        'w-4 h-4 transition-transform',
+                        expandedSections.includes(section.title) && 'rotate-180'
+                      )}
+                    />
+                  </button>
 
-                <AnimatePresence>
-                  {expandedSections.includes(section.title) && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
+                  <AnimatePresence>
+                    {expandedSections.includes(section.title) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-1 mt-1">
+                          {section.items.map((item) => {
+                            const isActive = pathname === item.href
+                            return (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
+                                  isActive
+                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-primary'
+                                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                                )}
+                              >
+                                <item.icon className="w-4 h-4" />
+                                {item.label}
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </nav>
+          ) : (
+            /* Collapsed Icons Only */
+            <nav className="flex flex-col items-center gap-2">
+              {menuSections.map((section) => (
+                section.items.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'p-2 rounded-lg transition-all',
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                      title={item.label}
                     >
-                      <div className="space-y-1 mt-1">
-                        {section.items.map((item) => {
-                          const isActive = pathname === item.href
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className={cn(
-                                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
-                                isActive
-                                  ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-primary'
-                                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                              )}
-                            >
-                              <item.icon className="w-4 h-4" />
-                              {item.label}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <item.icon className="w-5 h-5" />
+                    </Link>
+                  )
+                })
+              ))}
+            </nav>
+          )}
+
+          {sidebarOpen && (
+            <>
+              {/* Welcome Card */}
+              <div className="mt-6 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-8 h-8 bg-[var(--accent)]/10 rounded-lg flex items-center justify-center">
+                    <ShoppingCart className="w-4 h-4 text-[var(--accent)]" />
+                  </div>
+                  <button 
+                    onClick={() => setMobileOpen(false)}
+                    className="ml-auto text-muted-foreground hover:text-sidebar-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <h3 className="text-sm font-semibold text-sidebar-foreground mb-1">Welcome to ShadcnStore</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Explore our collection of Shadcn UI blocks to build your next project faster.
+                </p>
               </div>
-            ))}
-          </nav>
+
+              {/* User Profile Footer */}
+              <div className="mt-6 pt-4 border-t border-sidebar-border">
+                <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent)] to-indigo-600 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">A</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium text-sidebar-foreground">ShadcnStore</p>
+                    <p className="text-xs text-muted-foreground">shadcn@example.com</p>
+                  </div>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </aside>
     </>

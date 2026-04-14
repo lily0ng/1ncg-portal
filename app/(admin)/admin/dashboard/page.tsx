@@ -19,6 +19,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { TopConsumers } from '@/components/dashboard/TopConsumers'
+import { WaveChart } from '@/components/charts/WaveChart'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -73,23 +74,48 @@ export default function AdminDashboardPage() {
     >
       {/* Page header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-[var(--text)]">Dashboard</h1>
-        <p className="text-[var(--text-muted)]">Overview of your CloudStack infrastructure</p>
+        <h1 className="text-2xl font-semibold text-[var(--text)]">Dashboard</h1>
+        <p className="text-[var(--text-muted)] text-sm mt-1">Welcome to your admin dashboard</p>
       </motion.div>
 
-      {/* Stats row */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatsCard title="Total VMs" value={totalVMs} icon={Server} loading={loading} />
-        <StatsCard title="Running VMs" value={runningVMs} icon={Play} loading={loading} color="green" />
-        <StatsCard
-          title="Storage"
-          value={totalStorageGB > 0 ? `${totalStorageGB} GB` : '—'}
-          icon={HardDrive}
-          loading={loading}
+      {/* Stats row - 4 cards like shadcnStore */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard 
+          title="Total Revenue" 
+          value="$1,250.00" 
+          percentChange="+12.5%"
+          trend={{ positive: true, value: "12.5", text: "Trending up this month" }}
+          loading={loading} 
         />
-        <StatsCard title="Hosts" value={totalHosts} icon={Cpu} loading={loading} />
-        <StatsCard title="CPU Usage" value={`${cpuPercent}%`} icon={Activity} loading={loading} color={cpuPercent > 80 ? 'red' : 'green'} />
-        <StatsCard title="Alerts" value={alertCount} icon={AlertTriangle} loading={loading} color={alertCount > 0 ? 'red' : 'green'} />
+        <StatsCard 
+          title="New Customers" 
+          value="1,234" 
+          percentChange="-20%"
+          trend={{ positive: false, value: "20", text: "Down 20% this period" }}
+          loading={loading} 
+        />
+        <StatsCard 
+          title="Active Accounts" 
+          value="45,678" 
+          percentChange="+12.5%"
+          trend={{ positive: true, value: "12.5", text: "Strong user retention" }}
+          loading={loading} 
+        />
+        <StatsCard 
+          title="Growth Rate" 
+          value="4.5%" 
+          percentChange="+4.5%"
+          trend={{ positive: true, value: "4.5", text: "Steady performance increase" }}
+          loading={loading} 
+        />
+      </motion.div>
+
+      {/* Wave Chart - Total Visitors */}
+      <motion.div variants={itemVariants}>
+        <WaveChart 
+          title="Total Visitors" 
+          subtitle="Total for the last 3 months"
+        />
       </motion.div>
 
       {/* Charts row */}
