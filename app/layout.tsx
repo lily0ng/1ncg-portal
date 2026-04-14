@@ -5,16 +5,21 @@ import ToastProvider from '@/components/ToastProvider'
 import './globals.css'
 
 // Suppress React 19 script tag warning - works for both SSR and CSR
-const originalError = console.error
-console.error = (...args: unknown[]) => {
-  const message = typeof args[0] === 'string' ? args[0] : ''
-  if (
-    message.includes('Encountered a script tag while rendering React component') ||
-    message.includes('Scripts inside React components are never executed')
-  ) {
-    return
+if (typeof window !== 'undefined') {
+  const originalError = console.error
+  console.error = (...args: unknown[]) => {
+    if (args.length > 0) {
+      const message = String(args[0])
+      if (
+        message.includes('Encountered a script tag while rendering React component') ||
+        message.includes('Scripts inside React components are never executed') ||
+        message.includes('template tag')
+      ) {
+        return
+      }
+    }
+    originalError.apply(console, args)
   }
-  originalError.apply(console, args)
 }
 
 const inter = Inter({

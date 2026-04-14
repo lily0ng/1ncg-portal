@@ -38,6 +38,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
+  Database,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
@@ -197,16 +199,34 @@ export function AdminSidebar() {
         />
       )}
 
-      {/* Desktop Collapse Button */}
+      {/* Desktop Sidebar Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="hidden lg:flex fixed left-72 top-1/2 -translate-y-1/2 z-50 w-6 h-12 -ml-3 items-center justify-center bg-[var(--surface)] border border-[var(--border)] rounded-r-lg shadow-md hover:bg-[var(--accent)]/10 transition-all"
-        style={{ left: sidebarOpen ? '18rem' : '0' }}
+        className="hidden lg:flex fixed z-50 w-8 h-12 items-center justify-center bg-[var(--surface)] border border-[var(--border)] shadow-lg hover:bg-[var(--bg)] transition-all top-1/2 -translate-y-1/2"
+        style={{ 
+          left: sidebarOpen 
+            ? (sidebarPosition === 'right' ? 'auto' : '18rem') 
+            : (sidebarPosition === 'right' ? 'auto' : '0'),
+          right: sidebarPosition === 'right' 
+            ? (sidebarOpen ? '18rem' : '0') 
+            : 'auto',
+          borderRadius: sidebarPosition === 'right' 
+            ? '0.5rem 0 0 0.5rem' 
+            : '0 0.5rem 0.5rem 0'
+        }}
       >
         {sidebarOpen ? (
-          <ChevronLeft className="w-4 h-4 text-[var(--text)]" />
+          sidebarPosition === 'right' ? (
+            <ChevronRight className="w-5 h-5 text-[var(--text)]" />
+          ) : (
+            <ChevronLeft className="w-5 h-5 text-[var(--text)]" />
+          )
         ) : (
-          <ChevronRight className="w-4 h-4 text-[var(--text)]" />
+          sidebarPosition === 'right' ? (
+            <ChevronLeft className="w-5 h-5 text-[var(--text)]" />
+          ) : (
+            <ChevronRight className="w-5 h-5 text-[var(--text)]" />
+          )
         )}
       </button>
 
@@ -227,15 +247,13 @@ export function AdminSidebar() {
         <div className={cn('h-full', sidebarOpen ? 'p-6' : 'p-2 flex flex-col items-center')}>
           {/* Logo - ShadcnStore Style */}
           <Link href="/admin/dashboard" className={cn('flex items-center gap-3 mb-8', !sidebarOpen && 'lg:justify-center')}>
-            <div className="w-8 h-8 bg-[var(--surface)] border border-[var(--border)] rounded-lg flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-[var(--surface)] border border-[var(--border)] rounded-lg flex items-center justify-center">
               <LayoutGrid className="w-4 h-4 text-[var(--text)]" />
             </div>
-            {sidebarOpen && (
-              <div>
-                <h1 className="text-sm font-bold text-sidebar-foreground">ShadcnStore</h1>
-                <p className="text-xs text-muted-foreground">Admin Dashboard</p>
-              </div>
-            )}
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-semibold text-[var(--text)]">1CNG CMP</h1>
+              <p className="text-xs text-[var(--text-muted)]">Cloud Management Portal</p>
+            </div>
           </Link>
 
           {/* Menu */}
@@ -318,34 +336,15 @@ export function AdminSidebar() {
 
           {sidebarOpen && (
             <>
-              {/* Welcome Card */}
-              <div className="mt-6 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-8 h-8 bg-[var(--accent)]/10 rounded-lg flex items-center justify-center">
-                    <ShoppingCart className="w-4 h-4 text-[var(--accent)]" />
-                  </div>
-                  <button 
-                    onClick={() => setMobileOpen(false)}
-                    className="ml-auto text-muted-foreground hover:text-sidebar-foreground"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <h3 className="text-sm font-semibold text-sidebar-foreground mb-1">Welcome to ShadcnStore</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Explore our collection of Shadcn UI blocks to build your next project faster.
-                </p>
-              </div>
-
               {/* User Profile Footer */}
               <div className="mt-6 pt-4 border-t border-sidebar-border">
                 <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors">
                   <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent)] to-indigo-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">A</span>
+                    <span className="text-xs font-medium text-white">1</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-sidebar-foreground">ShadcnStore</p>
-                    <p className="text-xs text-muted-foreground">shadcn@example.com</p>
+                    <p className="text-sm font-medium text-sidebar-foreground">1CNG CMP</p>
+                    <p className="text-xs text-muted-foreground">admin@1cng.com</p>
                   </div>
                 </button>
               </div>
