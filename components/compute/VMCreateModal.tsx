@@ -201,27 +201,27 @@ export function VMCreateModal({ open, onClose, onRefresh }: Props) {
         if (step === 1) {
           const res  = await fetch('/api/zones')
           const data = await res.json()
-          setZones(data?.zones || data || [])
+          setZones(Array.isArray(data?.zones) ? data.zones : Array.isArray(data) ? data : [])
         }
         if (step === 2 && formData.zoneid) {
           const res  = await fetch(`/api/images/templates?zoneid=${formData.zoneid}&templatefilter=executable`)
           const data = await res.json()
-          setTemplates(data?.templates || data || [])
+          setTemplates(Array.isArray(data?.templates) ? data.templates : Array.isArray(data) ? data : [])
         }
         if (step === 3) {
           const res  = await fetch('/api/service-offerings/compute')
           const data = await res.json()
-          setOfferings(data?.serviceofferings || data || [])
+          setOfferings(Array.isArray(data?.offerings) ? data.offerings : Array.isArray(data) ? data : [])
         }
         if (step === 4 && formData.zoneid) {
           const res  = await fetch(`/api/network/networks?zoneid=${formData.zoneid}`)
           const data = await res.json()
-          setNetworks(data?.networks || data || [])
+          setNetworks(Array.isArray(data?.networks) ? data.networks : Array.isArray(data) ? data : [])
         }
         if (step === 5) {
           const res  = await fetch('/api/compute/ssh-keys')
           const data = await res.json()
-          setSSHKeys(data?.sshkeypair || data || [])
+          setSSHKeys(Array.isArray(data?.keypairs) ? data.keypairs : Array.isArray(data) ? data : [])
         }
       } catch (e: any) {
         setStepError(e.message || 'Failed to load data')

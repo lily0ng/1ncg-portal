@@ -119,6 +119,7 @@ export default function InstanceDetailPage() {
   }
 
   const memUsedMB = vm ? Math.max(0, (vm.memory ?? 0) - Math.round((vm.memoryintfreekbs ?? 0) / 1024)) : 0
+  const memTotalMB = vm?.memory ?? 0
   const memPct = vm?.memory ? Math.round((memUsedMB / vm.memory) * 100) : 0
   const cpuPct = parseFloat(vm?.cpuused?.replace('%', '') ?? '0')
 
@@ -388,7 +389,7 @@ export default function InstanceDetailPage() {
                         <Button variant="outline" size="sm" onClick={() => {
                           if (!confirm('Detach this volume?')) return
                           fetch(`/api/storage/volumes/${vol.id}/detach`, { method: 'POST' })
-                            .then(r => r.ok ? (toast.success('Volume detached'), mutateVols()) : toast.error('Failed to detach'))
+                            .then(r => { if (r.ok) { toast.success('Volume detached'); mutateVols(); } else { toast.error('Failed to detach'); } })
                         }} className="gap-1 text-[var(--text-muted)] border-[var(--border)]">
                           <Unplug className="w-3.5 h-3.5" /> Detach
                         </Button>
@@ -458,7 +459,7 @@ export default function InstanceDetailPage() {
                     <Button variant="outline" size="sm" onClick={() => {
                       if (!confirm(`Delete snapshot "${snap.name}"?`)) return
                       fetch(`/api/compute/snapshots/${snap.id}`, { method: 'DELETE' })
-                        .then(r => r.ok ? (toast.success('Snapshot deleted'), mutateSnaps()) : toast.error('Failed to delete'))
+                        .then(r => { if (r.ok) { toast.success('Snapshot deleted'); mutateSnaps(); } else { toast.error('Failed to delete'); } })
                     }} className="gap-1 text-red-400 border-red-600/30 hover:bg-red-500/10">
                       <Trash2 className="w-3.5 h-3.5" /> Delete
                     </Button>

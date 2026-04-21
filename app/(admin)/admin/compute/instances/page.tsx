@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { DeployVMDialog } from '@/components/compute/DeployVMDialog'
+import { VMCreateModal } from '@/components/compute/VMCreateModal'
 import { cn } from '@/lib/utils'
 
 const STATE_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary' | 'info'> = {
@@ -324,7 +324,7 @@ export default function InstancesPage() {
         </CardContent>
       </Card>
 
-      <DeployVMDialog open={deployOpen} onClose={() => setDeployOpen(false)} onDeployed={() => { setDeployOpen(false); fetchVMs(true) }} />
+      <VMCreateModal open={deployOpen} onClose={() => setDeployOpen(false)} onRefresh={() => { setDeployOpen(false); fetchVMs(true) }} />
     </div>
   )
 }
